@@ -1,59 +1,44 @@
-#!/usr/bin/python3
+!/usr/bin/python3
 """
-Script that reads stdin line by line and computes metrics:
-- Input format: <IP Address> - [<date>] "GET /projects/260 HTTP/1.1" <status
-                code> <file size>
-- After every 10 lines and/or a keyboard interruption (CTRL + C), print these
-    statistics from the beginning:
-Example:
-    File size: 5213
-    200: 2
-    401: 1
-    403: 2
-    404: 1
-    405: 1
-    500: 3
+Log parsing
 """
 import sys
-stcd = {"200": 0, "301": 0, "400": 0, "401": 0,
-        "403": 0, "404": 0, "405": 0, "500": 0}
-summ = 0
 
 
-def prn_stats():
+def print_metrics(file_size, status_codes):
     """
-    Function that print stats about log
+    Print metrics
     """
-    global summ
+    print("File size: {}".format(file_size))
+    codes_sorted = sorted(status_codes.keys())
+    for code in codes_sorted:
+        if status_codes[code] > 0:
+            print("{}: {}".format(code, status_codes[code]))
 
-    print('File size: {}'.format(summ))
-    stcdor = sorted(stcd.keys())
-    for each in stcdor:
-        if stcd[each] > 0:
-            print('{}: {}'.format(each, stcd[each]))
 
+codes_count = {'200': 0, '301': 0, '400': 0, '401': 0,
+               '403': 0, '404': 0, '405': 0, '500': 0}
+file_size_total = 0
+count = 0
 
 if __name__ == "__main__":
-    cnt = 0
     try:
-        """ Iter the standar input """
-        for data in sys.stdin:
+        for line in sys.stdin:
             try:
-                fact = data.split(' ')
-                """ If there is a status code """
-                if fact[-2] in stcd:
-                    stcd[fact[-2]] += 1
-                """ If there is a lenght """
-                summ += int(fact[-1])
-            except:
+                status_code = line.split()[-2]
+                if status_code in codes_count.keys():
+                    codes_count[status_code] += 1
+                # Grab file size
+                file_size = int(line.split()[-1])
+                file_size_total += file_size
+            except Exception:
                 pass
-            """ Printing control """
-            cnt += 1
-            if cnt == 10:
-                prn_stats()
-                cnt = 0
+            # print metrics if 10 lines have been read
+            count += 1
+            if count == 10:
+                print_metrics(file_size_total, codes_count)
+                count = 0
     except KeyboardInterrupt:
-        prn_stats()
+        print_metrics(file_size_total, codes_count)
         raise
-    else:
-        prn_stats()
+   print_metrics(file_size_total, codes_count)
