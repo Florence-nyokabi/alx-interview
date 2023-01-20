@@ -4,28 +4,43 @@
 
 import sys
 
-total_size = 0
-status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-line_count = 0
+
+def printStatus(dic, size):
+    """ Prints information """
+    print("File size: {:d}".format(size))
+    for i in sorted(dic.keys()):
+        if dic[i] != 0:
+            print("{}: {:d}".format(i, dic[i]))
+
+
+# sourcery skip: use-contextlib-suppress
+statusCodes = {"200": 0, "301": 0, "400": 0, "401": 0, "403": 0,
+               "404": 0, "405": 0, "500": 0}
+
+count = 0
+size = 0
 
 try:
     for line in sys.stdin:
-        line_count += 1
-        elements = line.split()
+        if count != 0 and count % 10 == 0:
+            printStatus(statusCodes, size)
+
+        stlist = line.split()
+        count += 1
+
         try:
-            if elements[5] not in status_codes:
-                continue
-            status_codes[int(elements[5])] += 1
-            total_size += int(elements[6])
-        except (IndexError, ValueError):
-            continue
-        if line_count % 10 == 0:
-            print(f"File size: {total_size}")
-            for key in sorted(status_codes.keys()):
-                if status_codes[key] > 0:
-                    print(f"{key}: {status_codes[key]}")
+            size += int(stlist[-1])
+        except Exception:
+            pass
+
+        try:
+            if stlist[-2] in statusCodes:
+                statusCodes[stlist[-2]] += 1
+        except Exception:
+            pass
+    printStatus(statusCodes, size)
+
+
 except KeyboardInterrupt:
-    print(f"File size: {total_size}")
-    for key in sorted(status_codes.keys()):
-        if status_codes[key] > 0:
-            print(f"{key}: {status_codes[key]}")
+    printStatus(statusCodes, size)
+    raise
