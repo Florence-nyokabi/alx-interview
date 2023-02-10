@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+     #!/usr/bin/python3
 '''N Queens Challenge'''
 
 import sys
@@ -88,4 +88,4 @@ if __name__ == '__main__':
         if idx == len(solutions) - 1:
             print(val, end='')
         else:
-            print(val)      
+            print(val)
